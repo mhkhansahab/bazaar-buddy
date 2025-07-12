@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ProductCard } from "@/components/products/product-card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
@@ -286,10 +287,12 @@ function CategorySection({ category }: CategorySectionProps) {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-          <Button variant="ghost" className="text-blue-600 hover:text-blue-700">
-            View All
-            <ArrowRight className="h-4 w-4 ml-1" />
-          </Button>
+          <Link href={`/category/${category.id}`}>
+            <Button variant="ghost" className="text-blue-600 hover:text-blue-700">
+              View All
+              <ArrowRight className="h-4 w-4 ml-1" />
+            </Button>
+          </Link>
         </div>
       </div>
 

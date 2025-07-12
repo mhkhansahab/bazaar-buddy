@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Heart, ShoppingCart, Eye, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { QuickViewModal } from "@/components/products/quick-view-modal";
 import { useState } from "react";
 
 interface ProductCardProps {
@@ -83,14 +84,27 @@ export function ProductCard({
           isHovered ? 'opacity-100' : 'opacity-0'
         }`}>
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
-            <Button
-              size="sm"
-              variant="secondary"
-              className="rounded-full px-3 py-2 bg-white/90 backdrop-blur-sm"
+            <QuickViewModal 
+              product={{
+                id,
+                title,
+                price,
+                originalPrice,
+                rating,
+                reviewCount,
+                image,
+                category
+              }}
             >
-              <Eye className="h-4 w-4 mr-1" />
-              Quick View
-            </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="rounded-full px-3 py-2 bg-white/90 backdrop-blur-sm"
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                Quick View
+              </Button>
+            </QuickViewModal>
             <Button
               size="sm"
               className="rounded-full px-3 py-2"
