@@ -6,6 +6,8 @@ import { Heart, ShoppingCart, Eye, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuickViewModal } from "@/components/products/quick-view-modal";
+import { useCart } from "@/lib/cart-context";
+import { useToast } from "@/lib/toast-context";
 import { useState } from "react";
 
 interface ProductCardProps {
@@ -35,6 +37,24 @@ export function ProductCard({
 }: ProductCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const { addToCart } = useCart();
+  const { addToast } = useToast();
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    addToCart({
+      id,
+      title,
+      price,
+      originalPrice,
+      image,
+      category,
+    });
+
+    addToast('success', `${title} added to cart!`);
+  };
 
   return (
     <Card 
@@ -108,6 +128,7 @@ export function ProductCard({
             <Button
               size="sm"
               className="rounded-full px-3 py-2"
+              onClick={handleAddToCart}
             >
               <ShoppingCart className="h-4 w-4 mr-1" />
               Add to Cart

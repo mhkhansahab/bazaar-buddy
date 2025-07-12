@@ -5,6 +5,8 @@ import Image from "next/image";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useCart } from "@/lib/cart-context";
+import { useToast } from "@/lib/toast-context";
 import { 
   Star, 
   Heart, 
@@ -90,6 +92,22 @@ export function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const { addToCart } = useCart();
+  const { addToast } = useToast();
+
+  const handleAddToCart = () => {
+    for (let i = 0; i < quantity; i++) {
+      addToCart({
+        id: PRODUCT_DATA.id,
+        title: PRODUCT_DATA.title,
+        price: PRODUCT_DATA.price,
+        originalPrice: PRODUCT_DATA.originalPrice,
+        image: PRODUCT_DATA.images[0],
+        category: PRODUCT_DATA.category,
+      });
+    }
+    addToast('success', `${quantity} ${PRODUCT_DATA.title} added to cart!`);
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -238,7 +256,7 @@ export function ProductDetailPage() {
 
               {/* Action Buttons */}
               <div className="flex space-x-4">
-                <Button size="lg" className="flex-1">
+                <Button size="lg" className="flex-1" onClick={handleAddToCart}>
                   <ShoppingCart className="h-5 w-5 mr-2" />
                   Add to Cart
                 </Button>

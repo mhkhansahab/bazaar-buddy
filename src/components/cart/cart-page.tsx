@@ -7,6 +7,7 @@ import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useCart } from "@/lib/cart-context";
 import { 
   Plus, 
   Minus, 
@@ -18,56 +19,9 @@ import {
   Truck
 } from "lucide-react";
 
-// Mock cart data
-const CART_ITEMS = [
-  {
-    id: "1",
-    title: "Wireless Bluetooth Headphones with Noise Cancellation",
-    price: 129.99,
-    originalPrice: 199.99,
-    image: "/placeholder-image.svg",
-    category: "Electronics",
-    quantity: 1,
-    seller: "TechStore Pro"
-  },
-  {
-    id: "2", 
-    title: "Organic Cotton T-Shirt - Premium Quality",
-    price: 29.99,
-    image: "/placeholder-image.svg",
-    category: "Fashion",
-    quantity: 2,
-    seller: "Fashion Hub"
-  },
-  {
-    id: "3",
-    title: "Smart Home LED Light Bulb with App Control",
-    price: 24.99,
-    originalPrice: 39.99,
-    image: "/placeholder-image.svg",
-    category: "Home & Garden",
-    quantity: 3,
-    seller: "Smart Home Co"
-  }
-];
-
 export function CartPage() {
-  const [cartItems, setCartItems] = useState(CART_ITEMS);
+  const { items: cartItems, updateQuantity, removeFromCart } = useCart();
   const [promoCode, setPromoCode] = useState("");
-
-  const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity === 0) {
-      setCartItems(cartItems.filter(item => item.id !== id));
-    } else {
-      setCartItems(cartItems.map(item => 
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      ));
-    }
-  };
-
-  const removeItem = (id: string) => {
-    setCartItems(cartItems.filter(item => item.id !== id));
-  };
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const shipping = subtotal > 50 ? 0 : 9.99;
@@ -196,7 +150,7 @@ export function CartPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => removeItem(item.id)}
+                          onClick={() => removeFromCart(item.id)}
                           className="text-red-500 hover:text-red-700 p-2"
                         >
                           <X className="h-5 w-5" />
