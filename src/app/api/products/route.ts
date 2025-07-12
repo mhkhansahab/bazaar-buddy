@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
       ? decodeURIComponent(searchParams?.get("category") || "")
       : null;
     const isActive = searchParams.get("active");
+    const sellerId = searchParams.get("seller_id");
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
 
@@ -42,6 +43,10 @@ export async function GET(request: NextRequest) {
       query = query.eq("is_active", isActive === "true");
     }
 
+    if (sellerId) {
+      query = query.eq("seller_id", sellerId);
+    }
+
     // Order by created_at descending
     query = query.order("created_at", { ascending: false });
 
@@ -70,6 +75,10 @@ export async function GET(request: NextRequest) {
 
     if (isActive !== null) {
       countQuery = countQuery.eq("is_active", isActive === "true");
+    }
+
+    if (sellerId) {
+      countQuery = countQuery.eq("seller_id", sellerId);
     }
 
     const { count: totalCount, error: countError } = await countQuery;
@@ -111,9 +120,9 @@ export async function POST(request: NextRequest) {
     const body: CreateProductData = await request.json();
 
     // Validate required fields
-    if (!body.name || !body.price || !body.category) {
+    if (!body.name || !body.price || !body.category || !body.seller_id) {
       return NextResponse.json(
-        { error: "Missing required fields: name, price, category" },
+        { error: "Missing required fields: name, price, category, seller_id" },
         { status: 400 }
       );
     }
@@ -134,6 +143,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate seller_id exists
+    const { data: seller, error: sellerError } = await supabase
+      .from(TableNames.SELLERS)
+      .select("id")
+      .eq("id", body.seller_id)
+      .single();
+
+    if (sellerError || !seller) {
+      return NextResponse.json(
+        { error: "Invalid seller_id: seller does not exist" },
+        { status: 400 }
+      );
+    }
+
     const { data: product, error } = await supabase
       .from(TableNames.PRODUCTS)
       .insert({
@@ -144,6 +167,7 @@ export async function POST(request: NextRequest) {
         image_url: body.image_url,
         stock_quantity: body.stock_quantity || 0,
         is_active: body.is_active ?? true,
+        seller_id: body.seller_id,
       })
       .select()
       .single();
