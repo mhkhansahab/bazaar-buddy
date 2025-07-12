@@ -44,6 +44,20 @@ interface CategoryInfo {
   totalProducts: number;
 }
 
+// Types for API response with pagination
+interface ProductsApiResponse {
+  data: Product[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+  message: string;
+}
+
 const SORT_OPTIONS = [
   { value: "relevance", label: "Most Relevant" },
   { value: "price-low", label: "Price: Low to High" },
@@ -85,19 +99,25 @@ function normalizeProduct(product: Product): NormalizedProduct {
 }
 
 // API functions
-async function fetchProducts(category?: string): Promise<Product[]> {
+async function fetchProducts(
+  category?: string,
+  page: number = 1,
+  limit: number = 12
+): Promise<ProductsApiResponse> {
   const url =
     category && category !== "all"
-      ? `/api/products?category=${encodeURIComponent(category)}&active=true`
-      : `/api/products?active=true`;
+      ? `/api/products?category=${encodeURIComponent(
+          category
+        )}&active=true&page=${page}&limit=${limit}`
+      : `/api/products?active=true&page=${page}&limit=${limit}`;
 
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch products: ${response.statusText}`);
   }
 
-  const result: ApiResponse<Product[]> = await response.json();
-  return result.data || [];
+  const productsResult: ProductsApiResponse = await response.json();
+  return productsResult;
 }
 
 async function fetchCategories(): Promise<Category[]> {
@@ -121,8 +141,14 @@ export function CategoryPage({ category }: CategoryPageProps) {
   // API state
   const [products, setProducts] = useState<NormalizedProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categoryInfo, setCategoryInfo] = useState<CategoryInfo | null>(null);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [totalProducts, setTotalProducts] = useState(0);
 
   // Fetch data on component mount and category change
   useEffect(() => {
@@ -130,16 +156,21 @@ export function CategoryPage({ category }: CategoryPageProps) {
       try {
         setLoading(true);
         setError(null);
+        setCurrentPage(1); // Reset pagination when category changes
 
         // Fetch products and categories in parallel
-        const [productsData, categoriesData] = await Promise.all([
-          fetchProducts(category),
+        const [productsResponse, categoriesData] = await Promise.all([
+          fetchProducts(category, 1, 12),
           fetchCategories(),
         ]);
 
         // Normalize products data
-        const normalizedProducts = productsData.map(normalizeProduct);
+        const normalizedProducts = productsResponse.data.map(normalizeProduct);
         setProducts(normalizedProducts);
+
+        // Set pagination state
+        setHasNextPage(productsResponse.pagination.hasNext);
+        setTotalProducts(productsResponse.pagination.total);
 
         // Set category info
         if (category === "all") {
@@ -147,7 +178,7 @@ export function CategoryPage({ category }: CategoryPageProps) {
             name: "All Categories",
             description:
               "Browse our complete collection of products across all categories",
-            totalProducts: normalizedProducts.length,
+            totalProducts: productsResponse.pagination.total,
           });
         } else {
           const categoryData = categoriesData.find(
@@ -162,7 +193,7 @@ export function CategoryPage({ category }: CategoryPageProps) {
               description:
                 categoryData.description ||
                 `Browse our ${categoryData.name} collection`,
-              totalProducts: normalizedProducts.length,
+              totalProducts: productsResponse.pagination.total,
             });
           } else {
             setCategoryInfo(null);
@@ -178,6 +209,33 @@ export function CategoryPage({ category }: CategoryPageProps) {
 
     loadData();
   }, [category]);
+
+  // Load more products function
+  const loadMoreProducts = async () => {
+    if (loadingMore || !hasNextPage) return;
+
+    try {
+      setLoadingMore(true);
+      const nextPage = currentPage + 1;
+
+      const productsResponse = await fetchProducts(category, nextPage, 12);
+
+      // Normalize new products and append to existing ones
+      const normalizedProducts = productsResponse.data.map(normalizeProduct);
+      setProducts((prev) => [...prev, ...normalizedProducts]);
+
+      // Update pagination state
+      setCurrentPage(nextPage);
+      setHasNextPage(productsResponse.pagination.hasNext);
+    } catch (err) {
+      console.error("Error loading more products:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to load more products"
+      );
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = products.filter((product) =>
@@ -539,10 +597,22 @@ export function CategoryPage({ category }: CategoryPageProps) {
         )}
 
         {/* Load More */}
-        {filteredAndSortedProducts.length > 0 && (
+        {filteredAndSortedProducts.length > 0 && hasNextPage && (
           <div className="text-center mt-12">
-            <Button variant="outline" size="lg">
-              Load More Products
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={loadMoreProducts}
+              disabled={loadingMore}
+            >
+              {loadingMore ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Loading More...
+                </>
+              ) : (
+                "Load More Products"
+              )}
             </Button>
           </div>
         )}
