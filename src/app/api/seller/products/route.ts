@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase/client'
 import { z } from 'zod'
 
 const createProductSchema = z.object({
-  title: z.string().min(1),
+  name: z.string().min(1),
   description: z.string().min(1),
   price: z.number().positive(),
   category: z.string().min(1),
@@ -22,11 +22,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, description, price, category, image_url, stock_quantity } = createProductSchema.parse(body)
+    const { name, description, price, category, image_url, stock_quantity } = createProductSchema.parse(body)
 
     const { data, error } = await supabase.from('products').insert([
       {
-        name: title,
+        name,
         description,
         price,
         category,

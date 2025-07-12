@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/client';
 
 interface GeneratedContent {
   title: string
@@ -92,7 +92,7 @@ export default function NewProduct() {
           'x-seller-id': sellerId,
         },
         body: JSON.stringify({
-          title: formData.title,
+          name: formData.title,
           description: formData.description,
           price: parseFloat(formData.price),
           category: formData.category,
