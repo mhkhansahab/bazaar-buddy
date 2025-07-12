@@ -86,11 +86,7 @@ const REVIEWS = [
   }
 ];
 
-interface ProductDetailPageProps {
-  productId: string;
-}
-
-export function ProductDetailPage({ productId }: ProductDetailPageProps) {
+export function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);

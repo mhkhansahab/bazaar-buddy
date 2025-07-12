@@ -4,22 +4,20 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Store, 
-  Package, 
-  DollarSign, 
-  TrendingUp, 
+import {
+  Store,
+  Package,
+  DollarSign,
+  TrendingUp,
   Plus,
   Eye,
   Edit,
   MoreHorizontal,
   Search,
-  Filter,
   LogOut,
   Settings,
   BarChart3,
-  Users,
-  ShoppingCart
+  ShoppingCart,
 } from "lucide-react";
 
 // Mock data for seller products
@@ -32,7 +30,7 @@ const SELLER_PRODUCTS = {
       stock: 45,
       status: "active",
       sales: 125,
-      image: "/placeholder-image.svg"
+      image: "/placeholder-image.svg",
     },
     {
       id: "2",
@@ -41,7 +39,7 @@ const SELLER_PRODUCTS = {
       stock: 0,
       status: "out_of_stock",
       sales: 89,
-      image: "/placeholder-image.svg"
+      image: "/placeholder-image.svg",
     },
     {
       id: "3",
@@ -50,8 +48,8 @@ const SELLER_PRODUCTS = {
       stock: 12,
       status: "active",
       sales: 34,
-      image: "/placeholder-image.svg"
-    }
+      image: "/placeholder-image.svg",
+    },
   ],
   fashion: [
     {
@@ -61,7 +59,7 @@ const SELLER_PRODUCTS = {
       stock: 78,
       status: "active",
       sales: 256,
-      image: "/placeholder-image.svg"
+      image: "/placeholder-image.svg",
     },
     {
       id: "5",
@@ -70,8 +68,8 @@ const SELLER_PRODUCTS = {
       stock: 23,
       status: "active",
       sales: 67,
-      image: "/placeholder-image.svg"
-    }
+      image: "/placeholder-image.svg",
+    },
   ],
   home: [
     {
@@ -81,7 +79,7 @@ const SELLER_PRODUCTS = {
       stock: 34,
       status: "active",
       sales: 145,
-      image: "/placeholder-image.svg"
+      image: "/placeholder-image.svg",
     },
     {
       id: "7",
@@ -90,16 +88,16 @@ const SELLER_PRODUCTS = {
       stock: 56,
       status: "active",
       sales: 89,
-      image: "/placeholder-image.svg"
-    }
-  ]
+      image: "/placeholder-image.svg",
+    },
+  ],
 };
 
 const DASHBOARD_STATS = {
   totalProducts: 7,
   totalSales: 865,
-  revenue: 45680.50,
-  activeListings: 6
+  revenue: 45680.5,
+  activeListings: 6,
 };
 
 export function SellerDashboard() {
@@ -108,9 +106,13 @@ export function SellerDashboard() {
 
   const categories = [
     { id: "all", name: "All Products", count: DASHBOARD_STATS.totalProducts },
-    { id: "electronics", name: "Electronics", count: SELLER_PRODUCTS.electronics.length },
+    {
+      id: "electronics",
+      name: "Electronics",
+      count: SELLER_PRODUCTS.electronics.length,
+    },
     { id: "fashion", name: "Fashion", count: SELLER_PRODUCTS.fashion.length },
-    { id: "home", name: "Home & Garden", count: SELLER_PRODUCTS.home.length }
+    { id: "home", name: "Home & Garden", count: SELLER_PRODUCTS.home.length },
   ];
 
   const getAllProducts = () => {
@@ -118,13 +120,15 @@ export function SellerDashboard() {
       return [
         ...SELLER_PRODUCTS.electronics,
         ...SELLER_PRODUCTS.fashion,
-        ...SELLER_PRODUCTS.home
+        ...SELLER_PRODUCTS.home,
       ];
     }
-    return SELLER_PRODUCTS[selectedCategory as keyof typeof SELLER_PRODUCTS] || [];
+    return (
+      SELLER_PRODUCTS[selectedCategory as keyof typeof SELLER_PRODUCTS] || []
+    );
   };
 
-  const filteredProducts = getAllProducts().filter(product =>
+  const filteredProducts = getAllProducts().filter((product) =>
     product.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -137,10 +141,12 @@ export function SellerDashboard() {
             <div className="flex items-center space-x-4">
               <Link href="/" className="flex items-center space-x-2">
                 <Store className="h-8 w-8 text-blue-600" />
-                <span className="text-xl font-bold text-gray-900">Seller Dashboard</span>
+                <span className="text-xl font-bold text-gray-900">
+                  Seller Dashboard
+                </span>
               </Link>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <Button variant="ghost" size="sm">
                 <BarChart3 className="h-4 w-4 mr-2" />
@@ -166,8 +172,12 @@ export function SellerDashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Products</p>
-                  <p className="text-2xl font-bold text-gray-900">{DASHBOARD_STATS.totalProducts}</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Products
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {DASHBOARD_STATS.totalProducts}
+                  </p>
                 </div>
                 <Package className="h-8 w-8 text-blue-600" />
               </div>
@@ -178,8 +188,12 @@ export function SellerDashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Sales</p>
-                  <p className="text-2xl font-bold text-gray-900">{DASHBOARD_STATS.totalSales}</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Sales
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {DASHBOARD_STATS.totalSales}
+                  </p>
                 </div>
                 <ShoppingCart className="h-8 w-8 text-green-600" />
               </div>
@@ -191,7 +205,9 @@ export function SellerDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Revenue</p>
-                  <p className="text-2xl font-bold text-gray-900">${DASHBOARD_STATS.revenue.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    ${DASHBOARD_STATS.revenue.toLocaleString()}
+                  </p>
                 </div>
                 <DollarSign className="h-8 w-8 text-emerald-600" />
               </div>
@@ -202,8 +218,12 @@ export function SellerDashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Active Listings</p>
-                  <p className="text-2xl font-bold text-gray-900">{DASHBOARD_STATS.activeListings}</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Active Listings
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {DASHBOARD_STATS.activeListings}
+                  </p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-purple-600" />
               </div>
@@ -235,7 +255,9 @@ export function SellerDashboard() {
                 {categories.map((category) => (
                   <Button
                     key={category.id}
-                    variant={selectedCategory === category.id ? "default" : "outline"}
+                    variant={
+                      selectedCategory === category.id ? "default" : "outline"
+                    }
                     size="sm"
                     onClick={() => setSelectedCategory(category.id)}
                     className="text-sm"
@@ -265,17 +287,32 @@ export function SellerDashboard() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Product</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Price</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Stock</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Sales</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Status</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Actions</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">
+                      Product
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">
+                      Price
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">
+                      Stock
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">
+                      Sales
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">
+                      Status
+                    </th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredProducts.map((product) => (
-                    <tr key={product.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <tr
+                      key={product.id}
+                      className="border-b border-gray-100 hover:bg-gray-50"
+                    >
                       <td className="py-4 px-4">
                         <div className="flex items-center space-x-3">
                           <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
@@ -286,32 +323,49 @@ export function SellerDashboard() {
                             />
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900">{product.title}</p>
-                            <p className="text-sm text-gray-600">ID: {product.id}</p>
+                            <p className="font-medium text-gray-900">
+                              {product.title}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              ID: {product.id}
+                            </p>
                           </div>
                         </div>
                       </td>
                       <td className="py-4 px-4">
-                        <span className="font-medium text-gray-900">${product.price}</span>
+                        <span className="font-medium text-gray-900">
+                          ${product.price}
+                        </span>
                       </td>
                       <td className="py-4 px-4">
-                        <span className={`font-medium ${
-                          product.stock === 0 ? 'text-red-600' : 
-                          product.stock < 20 ? 'text-orange-600' : 'text-gray-900'
-                        }`}>
+                        <span
+                          className={`font-medium ${
+                            product.stock === 0
+                              ? "text-red-600"
+                              : product.stock < 20
+                              ? "text-orange-600"
+                              : "text-gray-900"
+                          }`}
+                        >
                           {product.stock}
                         </span>
                       </td>
                       <td className="py-4 px-4">
-                        <span className="font-medium text-gray-900">{product.sales}</span>
+                        <span className="font-medium text-gray-900">
+                          {product.sales}
+                        </span>
                       </td>
                       <td className="py-4 px-4">
-                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                          product.status === 'active' 
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {product.status === 'active' ? 'Active' : 'Out of Stock'}
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                            product.status === "active"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {product.status === "active"
+                            ? "Active"
+                            : "Out of Stock"}
                         </span>
                       </td>
                       <td className="py-4 px-4">

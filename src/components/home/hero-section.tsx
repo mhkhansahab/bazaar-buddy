@@ -16,7 +16,6 @@ const PREDEFINED_QUERIES = [
 
 export function HeroSection() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [isAIMode, setIsAIMode] = useState(true);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -34,7 +33,7 @@ export function HeroSection() {
             <span className="block text-blue-600">Shopping Experience</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Let AI help you find exactly what you're looking for from millions of products
+            Let AI help you find exactly what you&apos;re looking for from millions of products
           </p>
         </div>
 
