@@ -30,14 +30,21 @@ export function useNLPSearch(): UseNLPSearchReturn {
     setError(null);
 
     try {
-      // Parse the natural language query
+      // Parse the natural language query on frontend
       const filters = parseNaturalLanguageQuery(query);
       setParsedFilters(filters);
 
-      // Make API call to search endpoint
-      const response = await fetch(
-        `/api/search/nlp?q=${encodeURIComponent(query)}`
-      );
+      // Send both query and parsed filters to backend
+      const response = await fetch("/api/search/nlp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: query,
+          filters: filters,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error("Search failed");

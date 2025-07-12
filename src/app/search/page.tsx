@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Filter, Search, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { ProductCard } from "@/components/products/product-card";
+import { parseNaturalLanguageQuery } from "@/lib/nlp-search";
 
 interface SearchMetadata {
   originalQuery: string;
@@ -56,9 +57,22 @@ export default function SearchPage() {
       setError(null);
 
       try {
-        const response = await fetch(
-          `/api/search/nlp?q=${encodeURIComponent(query)}`
-        );
+        // Parse the natural language query on frontend
+        const parsedFilters = parseNaturalLanguageQuery(query);
+
+        // Send both query and parsed filters to backend
+        const response = await fetch("/api/search/nlp", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            query: query,
+            filters: parsedFilters,
+          }),
+        });
+
+        console.log("response", response);
 
         if (!response.ok) {
           throw new Error("Search failed");
