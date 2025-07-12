@@ -11,7 +11,7 @@ const PREDEFINED_QUERIES = [
   "Eco-friendly home products",
   "Latest smartphone releases",
   "Comfortable running shoes",
-  "Home office setup essentials"
+  "Home office setup essentials",
 ];
 
 export function HeroSection() {
@@ -20,7 +20,6 @@ export function HeroSection() {
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     // TODO: Implement search functionality
-    console.log("Searching for:", query);
   };
 
   return (
@@ -33,7 +32,8 @@ export function HeroSection() {
             <span className="block text-blue-600">Shopping Experience</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Let AI help you find exactly what you&apos;re looking for from millions of products
+            Let AI help you find exactly what you&apos;re looking for from
+            millions of products
           </p>
         </div>
 
@@ -42,7 +42,9 @@ export function HeroSection() {
           <div className="relative max-w-2xl mx-auto">
             <div className="absolute left-4 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
               <Sparkles className="h-5 w-5 text-blue-500" />
-              <span className="text-sm font-medium text-blue-600">AI-Powered</span>
+              <span className="text-sm font-medium text-blue-600">
+                AI-Powered
+              </span>
             </div>
             <Input
               placeholder="Ask me anything about products you want to find..."
@@ -50,7 +52,7 @@ export function HeroSection() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-32 pr-20 py-4 text-lg rounded-2xl border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 shadow-lg"
               onKeyPress={(e) => {
-                if (e.key === 'Enter' && searchQuery.trim()) {
+                if (e.key === "Enter" && searchQuery.trim()) {
                   handleSearch(searchQuery);
                 }
               }}
@@ -68,7 +70,9 @@ export function HeroSection() {
 
         {/* Predefined Query Examples */}
         <div>
-          <p className="text-sm font-medium text-gray-500 mb-4">Try these examples:</p>
+          <p className="text-sm font-medium text-gray-500 mb-4">
+            Try these examples:
+          </p>
           <div className="flex flex-wrap justify-center gap-3">
             {PREDEFINED_QUERIES.map((query, index) => (
               <Button
