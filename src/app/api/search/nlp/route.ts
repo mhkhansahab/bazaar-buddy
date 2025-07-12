@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase/client";
 
 interface SearchFilters {
   category?: string;
+  subcategory?: string;
   color?: string;
   priceRange?: {
     min?: number;
@@ -12,6 +13,10 @@ interface SearchFilters {
   size?: string;
   brand?: string;
   material?: string;
+  powerRating?: string;
+  capacity?: string;
+  features?: string[];
+  tags?: string[];
 }
 
 interface SearchRequest {
@@ -41,6 +46,14 @@ export async function POST(request: NextRequest) {
       supabaseQuery = supabaseQuery.ilike("category", `%${filters.category}%`);
     }
 
+    // Subcategory filter
+    if (filters?.subcategory) {
+      supabaseQuery = supabaseQuery.ilike(
+        "subcategory",
+        `%${filters.subcategory}%`
+      );
+    }
+
     // Price range filter
     if (filters?.priceRange) {
       if (filters.priceRange.min !== undefined) {
@@ -51,21 +64,49 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Text search for color, size, brand, material, and keywords
+    // Brand filter
+    if (filters?.brand) {
+      supabaseQuery = supabaseQuery.ilike("brand", `%${filters.brand}%`);
+    }
+
+    // Color filter
+    if (filters?.color) {
+      supabaseQuery = supabaseQuery.ilike("color", `%${filters.color}%`);
+    }
+
+    // Size filter
+    if (filters?.size) {
+      supabaseQuery = supabaseQuery.ilike("size", `%${filters.size}%`);
+    }
+
+    // Material filter
+    if (filters?.material) {
+      supabaseQuery = supabaseQuery.ilike("material", `%${filters.material}%`);
+    }
+
+    // Power rating filter
+    if (filters?.powerRating) {
+      supabaseQuery = supabaseQuery.ilike(
+        "power_rating",
+        `%${filters.powerRating}%`
+      );
+    }
+
+    // Capacity filter
+    if (filters?.capacity) {
+      supabaseQuery = supabaseQuery.ilike("capacity", `%${filters.capacity}%`);
+    }
+
+    // Features filter (search in features array)
+    if (filters?.features && filters.features.length > 0) {
+      for (const feature of filters.features) {
+        supabaseQuery = supabaseQuery.contains("features", [feature]);
+      }
+    }
+
+    // Text search for keywords and other terms
     const textSearchTerms: string[] = [];
 
-    if (filters?.color) {
-      textSearchTerms.push(filters.color);
-    }
-    if (filters?.size) {
-      textSearchTerms.push(filters.size);
-    }
-    if (filters?.brand) {
-      textSearchTerms.push(filters.brand);
-    }
-    if (filters?.material) {
-      textSearchTerms.push(filters.material);
-    }
     if (filters?.keywords && filters.keywords.length > 0) {
       textSearchTerms.push(...filters.keywords);
     }
@@ -74,7 +115,7 @@ export async function POST(request: NextRequest) {
     if (textSearchTerms.length > 0) {
       const searchText = textSearchTerms.join(" ");
       supabaseQuery = supabaseQuery.or(
-        `name.ilike.%${searchText}%,description.ilike.%${searchText}%`
+        `name.ilike.%${searchText}%,description.ilike.%${searchText}%,tags.cs.{${searchText}}`
       );
     }
 
@@ -100,11 +141,15 @@ export async function POST(request: NextRequest) {
         totalResults: products?.length || 0,
         appliedFilters: {
           category: filters?.category,
+          subcategory: filters?.subcategory,
           color: filters?.color,
           priceRange: filters?.priceRange,
           size: filters?.size,
           brand: filters?.brand,
           material: filters?.material,
+          powerRating: filters?.powerRating,
+          capacity: filters?.capacity,
+          features: filters?.features,
           keywords: filters?.keywords || [],
         },
       },
@@ -136,7 +181,7 @@ export async function GET(request: NextRequest) {
       .select("*")
       .eq("is_active", true)
       .or(
-        `name.ilike.%${query}%,description.ilike.%${query}%,category.ilike.%${query}%`
+        `name.ilike.%${query}%,description.ilike.%${query}%,category.ilike.%${query}%,brand.ilike.%${query}%,tags.cs.{${query}}`
       )
       .order("created_at", { ascending: false });
 

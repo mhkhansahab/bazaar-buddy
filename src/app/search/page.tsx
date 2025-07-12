@@ -16,6 +16,7 @@ interface SearchMetadata {
   totalResults: number;
   appliedFilters: {
     category?: string;
+    subcategory?: string;
     color?: string;
     priceRange?: {
       min?: number;
@@ -24,6 +25,9 @@ interface SearchMetadata {
     size?: string;
     brand?: string;
     material?: string;
+    powerRating?: string;
+    capacity?: string;
+    features?: string[];
     keywords: string[];
   };
 }
@@ -35,6 +39,15 @@ interface Product {
   price: number;
   image_url: string;
   category: string;
+  subcategory?: string;
+  brand?: string;
+  color?: string;
+  size?: string;
+  material?: string;
+  power_rating?: string;
+  capacity?: string;
+  features?: string[];
+  tags?: string[];
   created_at: string;
 }
 
@@ -71,8 +84,6 @@ export default function SearchPage() {
             filters: parsedFilters,
           }),
         });
-
-        console.log("response", response);
 
         if (!response.ok) {
           throw new Error("Search failed");
@@ -168,6 +179,17 @@ export default function SearchPage() {
                     </div>
                   )}
 
+                  {searchMetadata.appliedFilters.subcategory && (
+                    <div>
+                      <span className="text-xs text-gray-500">
+                        Subcategory:
+                      </span>
+                      <Badge variant="secondary" className="ml-2">
+                        {searchMetadata.appliedFilters.subcategory}
+                      </Badge>
+                    </div>
+                  )}
+
                   {searchMetadata.appliedFilters.color && (
                     <div>
                       <span className="text-xs text-gray-500">Color:</span>
@@ -214,7 +236,45 @@ export default function SearchPage() {
                       </Badge>
                     </div>
                   )}
+
+                  {searchMetadata.appliedFilters.powerRating && (
+                    <div>
+                      <span className="text-xs text-gray-500">Power:</span>
+                      <Badge variant="secondary" className="ml-2">
+                        {searchMetadata.appliedFilters.powerRating}
+                      </Badge>
+                    </div>
+                  )}
+
+                  {searchMetadata.appliedFilters.capacity && (
+                    <div>
+                      <span className="text-xs text-gray-500">Capacity:</span>
+                      <Badge variant="secondary" className="ml-2">
+                        {searchMetadata.appliedFilters.capacity}
+                      </Badge>
+                    </div>
+                  )}
                 </div>
+
+                {searchMetadata.appliedFilters.features &&
+                  searchMetadata.appliedFilters.features.length > 0 && (
+                    <div className="mt-3">
+                      <span className="text-xs text-gray-500">Features:</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {searchMetadata.appliedFilters.features.map(
+                          (feature, index) => (
+                            <Badge
+                              key={index}
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              {feature}
+                            </Badge>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                 {searchMetadata.appliedFilters.keywords.length > 0 && (
                   <div className="mt-3">
