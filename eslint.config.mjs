@@ -50,6 +50,9 @@ const eslintConfig = [
       
       // Allow require statements
       "@typescript-eslint/no-var-requires": "warn",
+      
+      // Allow empty object types (common in component libraries)
+      "@typescript-eslint/no-empty-object-type": "warn",
     },
   },
 ];
