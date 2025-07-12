@@ -1,7 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { Search, ShoppingCart, User, Menu, Globe, ChevronDown, Grid3X3, Smartphone, Shirt, Home, Dumbbell } from "lucide-react";
+import {
+  Search,
+  ShoppingCart,
+  User,
+  Menu,
+  Globe,
+  ChevronDown,
+  Grid3X3,
+  Smartphone,
+  Shirt,
+  Home,
+  Dumbbell,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,16 +34,16 @@ export function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="text-2xl font-bold text-gray-900">
-              bazaar buddy
-            </div>
+            <div className="text-2xl font-bold text-gray-900">Bazaar Buddy</div>
           </Link>
 
           {/* Search Bar - Center */}
           <div className="flex-1 max-w-2xl mx-8">
-            <div className={`relative transition-all duration-200 ${
-              isSearchFocused ? 'shadow-lg' : 'shadow-sm'
-            }`}>
+            <div
+              className={`relative transition-all duration-200 ${
+                isSearchFocused ? "shadow-lg" : "shadow-sm"
+              }`}
+            >
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <Input
                 placeholder="Search for products, brands, or categories..."
@@ -59,7 +71,9 @@ export function Header() {
                     <Smartphone className="h-4 w-4 mr-3 text-blue-600" />
                     <div>
                       <div className="font-medium">Electronics</div>
-                      <div className="text-xs text-gray-500">Gadgets, phones, laptops</div>
+                      <div className="text-xs text-gray-500">
+                        Gadgets, phones, laptops
+                      </div>
                     </div>
                   </DropdownMenuItem>
                 </Link>
@@ -68,7 +82,9 @@ export function Header() {
                     <Shirt className="h-4 w-4 mr-3 text-pink-600" />
                     <div>
                       <div className="font-medium">Fashion</div>
-                      <div className="text-xs text-gray-500">Clothing, shoes, accessories</div>
+                      <div className="text-xs text-gray-500">
+                        Clothing, shoes, accessories
+                      </div>
                     </div>
                   </DropdownMenuItem>
                 </Link>
@@ -77,7 +93,9 @@ export function Header() {
                     <Home className="h-4 w-4 mr-3 text-green-600" />
                     <div>
                       <div className="font-medium">Home & Garden</div>
-                      <div className="text-xs text-gray-500">Furniture, decor, plants</div>
+                      <div className="text-xs text-gray-500">
+                        Furniture, decor, plants
+                      </div>
                     </div>
                   </DropdownMenuItem>
                 </Link>
@@ -86,7 +104,9 @@ export function Header() {
                     <Dumbbell className="h-4 w-4 mr-3 text-orange-600" />
                     <div>
                       <div className="font-medium">Sports & Fitness</div>
-                      <div className="text-xs text-gray-500">Equipment, sportswear</div>
+                      <div className="text-xs text-gray-500">
+                        Equipment, sportswear
+                      </div>
                     </div>
                   </DropdownMenuItem>
                 </Link>
@@ -140,7 +160,9 @@ export function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-64">
                 <div className="px-2 py-2">
-                  <div className="text-sm font-medium text-gray-900 mb-2">Categories</div>
+                  <div className="text-sm font-medium text-gray-900 mb-2">
+                    Categories
+                  </div>
                 </div>
                 <Link href="/category/electronics">
                   <DropdownMenuItem className="cursor-pointer">
