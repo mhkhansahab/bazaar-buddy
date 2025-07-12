@@ -10,7 +10,8 @@ import {
   Minus,
   Shield,
   Truck,
-  RotateCcw
+  RotateCcw,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -18,6 +19,8 @@ import {
   DialogContent, 
   DialogTrigger 
 } from "@/components/ui/dialog";
+import { useCart } from "@/lib/cart-context";
+import { useToast } from "@/lib/toast-context";
 
 interface QuickViewModalProps {
   product: {
@@ -70,11 +73,25 @@ export function QuickViewModal({ product, children }: QuickViewModalProps) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const { addToCart, isLoading } = useCart();
+  const { addToast } = useToast();
   
   const expandedProduct = getExpandedProductData(product);
   const discount = expandedProduct.originalPrice 
     ? Math.round(((expandedProduct.originalPrice - expandedProduct.price) / expandedProduct.originalPrice) * 100)
     : 0;
+
+  const handleAddToCart = async () => {
+    await addToCart({
+      id: product.id,
+      title: product.title,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image: product.image,
+      category: product.category,
+    }, quantity);
+    addToast('success', `${quantity} ${product.title} added to cart!`);
+  };
 
   return (
     <Dialog>
@@ -218,9 +235,18 @@ export function QuickViewModal({ product, children }: QuickViewModalProps) {
 
               {/* Action Buttons */}
               <div className="flex space-x-3">
-                <Button className="flex-1" size="lg">
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Add to Cart
+                <Button 
+                  className="flex-1" 
+                  size="lg" 
+                  onClick={handleAddToCart}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                  )}
+                  {isLoading ? "Adding to Cart..." : "Add to Cart"}
                 </Button>
                 <Button
                   variant="outline"

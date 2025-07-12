@@ -4,6 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { logout, useSellerAuth } from "@/lib/seller-auth";
+import { useConfirmationModal } from "@/components/ui/confirmation-modal";
+import { useSellerProducts } from "@/hooks/use-seller-products";
+import { Product } from "@/lib/types/database";
 import {
   Store,
   Package,
@@ -20,117 +24,78 @@ import {
   ShoppingCart,
 } from "lucide-react";
 
-// Mock data for seller products
-const SELLER_PRODUCTS = {
-  electronics: [
-    {
-      id: "1",
-      title: "Wireless Bluetooth Headphones",
-      price: 129.99,
-      stock: 45,
-      status: "active",
-      sales: 125,
-      image: "/placeholder-image.svg",
-    },
-    {
-      id: "2",
-      title: "Smart Watch Series 9",
-      price: 399.99,
-      stock: 0,
-      status: "out_of_stock",
-      sales: 89,
-      image: "/placeholder-image.svg",
-    },
-    {
-      id: "3",
-      title: "Gaming Laptop - High Performance",
-      price: 1299.99,
-      stock: 12,
-      status: "active",
-      sales: 34,
-      image: "/placeholder-image.svg",
-    },
-  ],
-  fashion: [
-    {
-      id: "4",
-      title: "Designer Jeans - Premium Denim",
-      price: 89.99,
-      stock: 78,
-      status: "active",
-      sales: 256,
-      image: "/placeholder-image.svg",
-    },
-    {
-      id: "5",
-      title: "Elegant Evening Dress",
-      price: 159.99,
-      stock: 23,
-      status: "active",
-      sales: 67,
-      image: "/placeholder-image.svg",
-    },
-  ],
-  home: [
-    {
-      id: "6",
-      title: "Smart Thermostat with WiFi",
-      price: 179.99,
-      stock: 34,
-      status: "active",
-      sales: 145,
-      image: "/placeholder-image.svg",
-    },
-    {
-      id: "7",
-      title: "Modern Table Lamp",
-      price: 89.99,
-      stock: 56,
-      status: "active",
-      sales: 89,
-      image: "/placeholder-image.svg",
-    },
-  ],
-};
-
-const DASHBOARD_STATS = {
-  totalProducts: 7,
-  totalSales: 865,
-  revenue: 45680.5,
-  activeListings: 6,
-};
-
 export function SellerDashboard() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const { seller, logout } = useSellerAuth();
+  const { openModal, ModalComponent } = useConfirmationModal();
+  const { products, isLoading, error, refetch } = useSellerProducts();
 
+  const handleLogout = () => {
+    openModal({
+      title: "Confirm Logout",
+      description: "Are you sure you want to logout? You will need to sign in again to access your dashboard.",
+      confirmText: "Logout",
+      cancelText: "Stay Signed In",
+      variant: "destructive",
+      icon: <LogOut className="h-6 w-6" />,
+      onConfirm: logout
+    });
+  };
+
+  // Calculate stats from real products data
+  const totalProducts = products.length;
+  const activeListings = products.filter(product => product.is_active && product.stock_quantity > 0).length;
+  // Note: sales data would need to be added to database schema
+  const totalSales = 0; // placeholder until sales tracking is added
+  const revenue = 0; // placeholder until sales tracking is added
+
+  // Get unique categories from products
+  const uniqueCategories = [...new Set(products.map(product => product.category))];
+  
   const categories = [
-    { id: "all", name: "All Products", count: DASHBOARD_STATS.totalProducts },
-    {
-      id: "electronics",
-      name: "Electronics",
-      count: SELLER_PRODUCTS.electronics.length,
-    },
-    { id: "fashion", name: "Fashion", count: SELLER_PRODUCTS.fashion.length },
-    { id: "home", name: "Home & Garden", count: SELLER_PRODUCTS.home.length },
+    { id: "all", name: "All Products", count: totalProducts },
+    ...uniqueCategories.map(category => ({
+      id: category,
+      name: category.charAt(0).toUpperCase() + category.slice(1),
+      count: products.filter(product => product.category === category).length,
+    }))
   ];
 
   const getAllProducts = () => {
     if (selectedCategory === "all") {
-      return [
-        ...SELLER_PRODUCTS.electronics,
-        ...SELLER_PRODUCTS.fashion,
-        ...SELLER_PRODUCTS.home,
-      ];
+      return products;
     }
-    return (
-      SELLER_PRODUCTS[selectedCategory as keyof typeof SELLER_PRODUCTS] || []
-    );
+    return products.filter(product => product.category === selectedCategory);
   };
 
   const filteredProducts = getAllProducts().filter((product) =>
-    product.title.toLowerCase().includes(searchQuery.toLowerCase())
+    product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading your products...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Error loading products: {error}</p>
+          <Button onClick={() => refetch()} variant="outline">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -141,9 +106,16 @@ export function SellerDashboard() {
             <div className="flex items-center space-x-4">
               <Link href="/" className="flex items-center space-x-2">
                 <Store className="h-8 w-8 text-blue-600" />
-                <span className="text-xl font-bold text-gray-900">
-                  Seller Dashboard
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-xl font-bold text-gray-900">
+                    {seller?.storeName || "Seller Dashboard"}
+                  </span>
+                  {seller && (
+                    <span className="text-sm text-gray-600">
+                      Welcome back, {seller.name}
+                    </span>
+                  )}
+                </div>
               </Link>
             </div>
 
@@ -156,7 +128,7 @@ export function SellerDashboard() {
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </Button>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
@@ -176,7 +148,7 @@ export function SellerDashboard() {
                     Total Products
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {DASHBOARD_STATS.totalProducts}
+                    {totalProducts}
                   </p>
                 </div>
                 <Package className="h-8 w-8 text-blue-600" />
@@ -192,7 +164,7 @@ export function SellerDashboard() {
                     Total Sales
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {DASHBOARD_STATS.totalSales}
+                    {totalSales}
                   </p>
                 </div>
                 <ShoppingCart className="h-8 w-8 text-green-600" />
@@ -206,7 +178,7 @@ export function SellerDashboard() {
                 <div>
                   <p className="text-sm font-medium text-gray-600">Revenue</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    ${DASHBOARD_STATS.revenue.toLocaleString()}
+                    ${revenue.toLocaleString()}
                   </p>
                 </div>
                 <DollarSign className="h-8 w-8 text-emerald-600" />
@@ -222,7 +194,7 @@ export function SellerDashboard() {
                     Active Listings
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {DASHBOARD_STATS.activeListings}
+                    {activeListings}
                   </p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-purple-600" />
@@ -317,14 +289,14 @@ export function SellerDashboard() {
                         <div className="flex items-center space-x-3">
                           <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
                             <img
-                              src={product.image}
-                              alt={product.title}
+                              src={product.image_url || "/placeholder-image.svg"}
+                              alt={product.name}
                               className="w-full h-full object-cover"
                             />
                           </div>
                           <div>
                             <p className="font-medium text-gray-900">
-                              {product.title}
+                              {product.name}
                             </p>
                             <p className="text-sm text-gray-600">
                               ID: {product.id}
@@ -340,32 +312,34 @@ export function SellerDashboard() {
                       <td className="py-4 px-4">
                         <span
                           className={`font-medium ${
-                            product.stock === 0
+                            product.stock_quantity === 0
                               ? "text-red-600"
-                              : product.stock < 20
+                              : product.stock_quantity < 20
                               ? "text-orange-600"
                               : "text-gray-900"
                           }`}
                         >
-                          {product.stock}
+                          {product.stock_quantity}
                         </span>
                       </td>
                       <td className="py-4 px-4">
                         <span className="font-medium text-gray-900">
-                          {product.sales}
+                          0
                         </span>
                       </td>
                       <td className="py-4 px-4">
                         <span
                           className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                            product.status === "active"
+                            product.is_active && product.stock_quantity > 0
                               ? "bg-green-100 text-green-800"
                               : "bg-red-100 text-red-800"
                           }`}
                         >
-                          {product.status === "active"
+                          {product.is_active && product.stock_quantity > 0
                             ? "Active"
-                            : "Out of Stock"}
+                            : product.stock_quantity === 0 
+                            ? "Out of Stock"
+                            : "Inactive"}
                         </span>
                       </td>
                       <td className="py-4 px-4">
@@ -389,6 +363,9 @@ export function SellerDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Confirmation Modal */}
+      {ModalComponent}
     </div>
   );
 }

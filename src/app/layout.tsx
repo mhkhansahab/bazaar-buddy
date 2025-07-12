@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { CartProvider } from "@/lib/cart-context";
+import { ToastProvider } from "@/lib/toast-context";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -43,7 +45,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
       >
-        {children}
+        <ToastProvider>
+          <CartProvider>
+            {children}
+          </CartProvider>
+        </ToastProvider>
         <script
           dangerouslySetInnerHTML={{
             __html: `
