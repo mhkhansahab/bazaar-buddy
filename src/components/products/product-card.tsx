@@ -35,6 +35,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   return (
     <Card 
@@ -72,10 +73,11 @@ export function ProductCard({
       <div className="relative aspect-square overflow-hidden">
         <Link href={`/product/${id}`}>
           <Image
-            src={image}
+            src={imageError || !image ? "/placeholder-image.svg" : image}
             alt={title}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={() => setImageError(true)}
           />
         </Link>
         
