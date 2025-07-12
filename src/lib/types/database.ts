@@ -1,6 +1,18 @@
 // Database table types
 // Update these types based on your actual database schema
 
+export interface Seller {
+  id: number
+  email: string
+  password: string
+  name: string
+  store_name: string
+  phone?: string
+  address?: string
+  created_at: string
+  updated_at: string
+}
+
 export interface Product {
   id: number
   name: string
@@ -10,6 +22,7 @@ export interface Product {
   image_url?: string
   stock_quantity: number
   is_active: boolean
+  seller_id: number
   created_at: string
   updated_at: string
 }
@@ -44,6 +57,7 @@ export interface CreateProductData {
   image_url?: string
   stock_quantity: number
   is_active?: boolean
+  seller_id: number
 }
 
 export interface UpdateProductData {
@@ -54,10 +68,12 @@ export interface UpdateProductData {
   image_url?: string
   stock_quantity?: number
   is_active?: boolean
+  seller_id?: number
 }
 
 // Table names enum for type safety
 export enum TableNames {
   PRODUCTS = 'products',
-  CATEGORIES = 'categories'
+  CATEGORIES = 'categories',
+  SELLERS = 'sellers'
 } 
