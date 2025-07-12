@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { supabase } from '@/lib/supabase';
 
 interface GeneratedContent {
   title: string
@@ -31,24 +32,58 @@ export default function NewProduct() {
   const [imageUrl, setImageUrl] = useState('')
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent | null>(null)
   const [generatedImage, setGeneratedImage] = useState<GeneratedImage | null>(null)
+  const [uploading, setUploading] = useState(false);
+
+  // Helper to check if content is generic
+  const isGenericContent = (content: GeneratedContent | null) => {
+    if (!content) return true;
+    return (
+      content.title === 'Product Title' ||
+      content.description === 'Product Description' ||
+      content.category === 'General'
+    );
+  };
+
+  // Auto-trigger content generation when imageUrl changes and is a valid URL
+  useEffect(() => {
+    if (imageUrl && /^https?:\/\//.test(imageUrl)) {
+      generateContentFromImage();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imageUrl]);
+
+  // Auto-trigger content generation when title is entered and no image is present
+  useEffect(() => {
+    if (!imageUrl && formData.title && formData.title.length > 2) {
+      generateContentFromImage();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.title]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    // If title or description changes, clear generated image
+    if (name === 'title' || name === 'description') {
+      setGeneratedImage(null);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
     try {
-      const sellerStr = localStorage.getItem('seller')
+      const sellerStr = localStorage.getItem('seller');
       if (!sellerStr) {
-        alert('Please login first')
-        return
+        alert('Please login first');
+        return;
       }
-      const seller = JSON.parse(sellerStr)
-      const sellerId = seller.id
+      const seller = JSON.parse(sellerStr);
+      const sellerId = seller.id;
+
+      // Use AI-generated image if available
+      const image_url = generatedImage?.url || (formData.images[0] || '');
 
       const response = await fetch('/api/seller/products', {
         method: 'POST',
@@ -57,14 +92,17 @@ export default function NewProduct() {
           'x-seller-id': sellerId,
         },
         body: JSON.stringify({
-          ...formData,
+          title: formData.title,
+          description: formData.description,
           price: parseFloat(formData.price),
+          category: formData.category,
+          image_url,
           stock_quantity: parseInt(formData.stock),
         })
-      })
+      });
 
       if (response.ok) {
-        alert('Product created successfully!')
+        alert('Product created successfully!');
         setFormData({
           title: '',
           description: '',
@@ -72,35 +110,42 @@ export default function NewProduct() {
           category: '',
           stock: '',
           images: []
-        })
-        setGeneratedContent(null)
-        setGeneratedImage(null)
+        });
+        setGeneratedContent(null);
+        setGeneratedImage(null);
+        setImageUrl('');
       } else {
-        const error = await response.json()
-        alert(`Error: ${error.error}`)
+        const error = await response.json();
+        alert(`Error: ${error.error}`);
       }
     } catch (error) {
-      console.error('Error creating product:', error)
-      alert('Error creating product')
+      console.error('Error creating product:', error);
+      alert('Error creating product');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const generateContentFromImage = async () => {
-    if (!imageUrl) {
-      alert('Please enter an image URL first')
-      return
-    }
+    // if (!imageUrl) {
+    //   alert('Please enter an image URL first')
+    //   return
+    // }
 
     setGenerating(true)
     try {
-      const token = localStorage.getItem('seller-token')
+      const sellerStr = localStorage.getItem('seller')
+      if (!sellerStr) {
+        alert('Please login first')
+        return
+      }
+      const seller = JSON.parse(sellerStr)
+      const sellerId = seller.id
       const response = await fetch('/api/seller/products/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'x-seller-id': sellerId,
         },
         body: JSON.stringify({
           type: 'from-image',
@@ -131,15 +176,25 @@ export default function NewProduct() {
       alert('Please enter title and description first')
       return
     }
+    if (!formData.category) {
+      alert('Please enter category before generating an image')
+      return
+    }
 
     setGenerating(true)
     try {
-      const token = localStorage.getItem('seller-token')
+      const sellerStr = localStorage.getItem('seller')
+      if (!sellerStr) {
+        alert('Please login first')
+        return
+      }
+      const seller = JSON.parse(sellerStr)
+      const sellerId = seller.id
       const response = await fetch('/api/seller/products/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'x-seller-id': sellerId,
         },
         body: JSON.stringify({
           type: 'generate-image',
@@ -173,12 +228,18 @@ export default function NewProduct() {
 
     setGenerating(true)
     try {
-      const token = localStorage.getItem('seller-token')
+      const sellerStr = localStorage.getItem('seller')
+      if (!sellerStr) {
+        alert('Please login first')
+        return
+      }
+      const seller = JSON.parse(sellerStr)
+      const sellerId = seller.id
       const response = await fetch('/api/seller/products/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'x-seller-id': sellerId,
         },
         body: JSON.stringify({
           type: 'enhance-description',
@@ -202,6 +263,32 @@ export default function NewProduct() {
     }
   }
 
+  // Handle file upload to Supabase Storage
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const { data, error } = await supabase.storage.from('products-images').upload(fileName, file);
+      if (error) {
+        alert('Image upload failed: ' + error.message);
+        return;
+      }
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage.from('products-images').getPublicUrl(fileName);
+      if (publicUrlData?.publicUrl) {
+        setImageUrl(publicUrlData.publicUrl);
+        setFormData(prev => ({ ...prev, images: [publicUrlData.publicUrl] }));
+      }
+    } catch (err) {
+      alert('Image upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-4xl mx-auto">
@@ -215,6 +302,27 @@ export default function NewProduct() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Image Preview */}
+                {(generatedImage?.url || imageUrl || formData.images[0]) && (
+                  <div className="mb-4">
+                    <img
+                      src={generatedImage?.url || imageUrl || formData.images[0]}
+                      alt="Product preview"
+                      className="w-full h-48 object-cover rounded-md border"
+                    />
+                  </div>
+                )}
+                {/* File Upload */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Upload Image</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    disabled={uploading}
+                  />
+                  {uploading && <div className="text-xs text-gray-500 mt-1">Uploading...</div>}
+                </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Title</label>
                   <Input
@@ -295,6 +403,29 @@ export default function NewProduct() {
                   {loading ? 'Creating...' : 'Create Product'}
                 </Button>
               </form>
+              {/* Show generated content in the form */}
+              {generatedContent && (
+                <div className="mt-4 p-4 bg-green-50 rounded-md">
+                  <h4 className="font-medium text-green-800">Generated Content:</h4>
+                  <p className="text-sm text-green-700 mt-2">
+                    <strong>Title:</strong> {generatedContent.title}
+                  </p>
+                  <p className="text-sm text-green-700">
+                    <strong>Description:</strong> {generatedContent.description}
+                  </p>
+                  <p className="text-sm text-green-700">
+                    <strong>Category:</strong> {generatedContent.category}
+                  </p>
+                  <p className="text-sm text-green-700">
+                    <strong>Tags:</strong> {generatedContent.tags.join(', ')}
+                  </p>
+                  {isGenericContent(generatedContent) && (
+                    <div className="mt-2 text-yellow-700 bg-yellow-100 p-2 rounded">
+                      AI could not generate specific content. Try a different image or a more descriptive title.
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -313,7 +444,7 @@ export default function NewProduct() {
                 />
                 <Button 
                   onClick={generateContentFromImage} 
-                  disabled={generating || !imageUrl}
+                  disabled={generating || (!imageUrl && !formData.title)}
                   className="w-full"
                 >
                   {generating ? 'Generating...' : 'Generate Content'}
@@ -344,7 +475,7 @@ export default function NewProduct() {
               <CardContent className="space-y-4">
                 <Button 
                   onClick={generateImageFromText} 
-                  disabled={generating || !formData.title || !formData.description}
+                  disabled={generating || !formData.title || !formData.description || !formData.category || !!(generatedImage?.url || imageUrl || formData.images[0])}
                   className="w-full"
                 >
                   {generating ? 'Generating...' : 'Generate Image'}

@@ -40,15 +40,16 @@ export function AddProductPage() {
   });
 
   const categories = [
-    "Electronics",
-    "Fashion",
-    "Home & Garden",
-    "Sports & Fitness",
-    "Books & Media",
-    "Health & Beauty",
-    "Toys & Games",
     "Automotive",
-    "Food & Beverages"
+    "Beauty & Personal Care",
+    "Books",
+    "Clothing",
+    "Electronics",
+    "Health & Wellness",
+    "Home & Garden",
+    "Kitchen & Dining",
+    "Sports",
+    "Toys & Games"
   ];
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -21,52 +21,72 @@ export interface GeneratedImage {
   prompt: string
 }
 
+// Helper to fetch image and convert to base64
+async function imageUrlToBase64(url: string): Promise<string> {
+  const res = await fetch(url);
+  const buffer = await res.arrayBuffer();
+  return Buffer.from(buffer).toString('base64');
+}
+
 // Generate product content based on image
 export async function generateContentFromImage(imageUrl: string): Promise<GeneratedContent> {
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4-vision-preview",
-      messages: [
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error('GEMINI_API_KEY is missing');
+
+    const prompt = `You are an expert e-commerce copywriter. Analyze this product image and generate a catchy, specific product title, a detailed and engaging product description (at least 50 words), and a relevant product category. The product is for an online marketplace. Output as JSON: { title, description, category, tags }. Do NOT use generic placeholders like 'Product Title' or 'General'. If you can't identify the product, say so in the description.`;
+
+    // Fetch image and convert to base64
+    const base64Image = await imageUrlToBase64(imageUrl);
+
+    const body = {
+      contents: [
         {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: "Analyze this product image and generate a compelling product listing. Return a JSON object with: title (catchy product name), description (detailed product description), category (product category), and tags (array of relevant tags). Make it engaging and sales-focused."
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: imageUrl
-              }
-            }
+          parts: [
+            { text: prompt },
+            { inline_data: { mime_type: 'image/jpeg', data: base64Image } }
           ]
         }
-      ],
-      max_tokens: 500,
-    })
+      ]
+    };
 
-    const content = response.choices[0]?.message?.content
-    if (!content) {
-      throw new Error('No content generated')
+    const response = await fetch('https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=' + apiKey, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    const result = await response.json();
+    // Log base64 image length
+    console.log('Base64 image length:', base64Image.length);
+    // Log the full Gemini API response
+    console.log('Gemini full response:', JSON.stringify(result, null, 2));
+    // Log any error fields if present
+    if (result.error) {
+        console.error('Gemini API error:', result.error);
     }
+    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    console.log('Gemini raw content:', text);
+    if (!text) throw new Error('No content generated. See logs for Gemini response and error details.');
 
-    // Parse JSON response
-    const parsed = JSON.parse(content)
+    // Try to extract JSON from the response
+    const match = text.match(/\{[\s\S]*\}/);
+    const jsonStr = match ? match[0] : '{}';
+    const parsed = JSON.parse(jsonStr);
     return {
       title: parsed.title || 'Product Title',
       description: parsed.description || 'Product Description',
       category: parsed.category || 'General',
       tags: parsed.tags || []
-    }
+    };
   } catch (error) {
-    console.error('Error generating content from image:', error)
+    console.error('Error generating content from image (Gemini):', error);
     return {
       title: 'Product Title',
       description: 'Product Description',
       category: 'General',
       tags: []
-    }
+    };
   }
 }
 
