@@ -42,23 +42,24 @@ export default function NewProduct() {
     setLoading(true)
 
     try {
-      const token = localStorage.getItem('seller-token')
-      if (!token) {
+      const sellerStr = localStorage.getItem('seller')
+      if (!sellerStr) {
         alert('Please login first')
         return
       }
+      const seller = JSON.parse(sellerStr)
+      const sellerId = seller.id
 
       const response = await fetch('/api/seller/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'x-seller-id': sellerId,
         },
         body: JSON.stringify({
           ...formData,
           price: parseFloat(formData.price),
-          stock: parseInt(formData.stock),
-          images: formData.images
+          stock_quantity: parseInt(formData.stock),
         })
       })
 

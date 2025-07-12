@@ -96,11 +96,10 @@ export default function AdminDashboard() {
       })
       const data = await response.json()
       
-      if (data.token) {
-        localStorage.setItem('seller-token', data.token)
-        setToken(data.token)
-        fetchProducts(data.token)
-        fetchAnalytics(data.token)
+      if (data.seller) {
+        // Optionally store seller info in localStorage
+        localStorage.setItem('seller', JSON.stringify(data.seller))
+        window.location.href = '/admin';
       } else {
         alert(data.error || 'Login failed')
       }

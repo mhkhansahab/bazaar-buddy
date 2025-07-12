@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 import { z } from 'zod'
 
 const createProductSchema = z.object({
@@ -7,8 +7,8 @@ const createProductSchema = z.object({
   description: z.string().min(1),
   price: z.number().positive(),
   category: z.string().min(1),
-  images: z.array(z.string().url()).optional(),
-  stock: z.number().int().min(0).default(0),
+  image_url: z.string().url().optional(),
+  stock_quantity: z.number().int().min(0).default(0),
 })
 
 export async function POST(request: NextRequest) {
@@ -22,43 +22,38 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, description, price, category, images, stock } = createProductSchema.parse(body)
+    const { title, description, price, category, image_url, stock_quantity } = createProductSchema.parse(body)
 
-    const product = await prisma.product.create({
-      data: {
-        title,
+    const { data, error } = await supabase.from('products').insert([
+      {
+        name: title,
         description,
         price,
         category,
-        images: JSON.stringify(images || []),
-        stock,
-        sellerId,
-      },
-      include: {
-        seller: {
-          select: {
-            name: true,
-            storeName: true,
-          }
-        }
+        image_url: image_url || '',
+        stock_quantity,
+        is_active: true,
+        seller_id: sellerId,
       }
-    })
+    ]).select()
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
 
     return NextResponse.json({
       message: 'Product created successfully',
-      product
+      product: data[0]
     }, { status: 201 })
 
   } catch (error) {
     console.error('Create product error:', error)
-    
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid input data', details: error.errors },
         { status: 400 }
       )
     }
-
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -76,50 +71,17 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const { searchParams } = new URL(request.url)
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '10')
-    const category = searchParams.get('category')
-    const isActive = searchParams.get('isActive')
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('seller_id', sellerId)
+      .order('created_at', { ascending: false })
 
-    const where: any = { sellerId }
-    
-    if (category) {
-      where.category = category
-    }
-    
-    if (isActive !== null) {
-      where.isActive = isActive === 'true'
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    const products = await prisma.product.findMany({
-      where,
-      include: {
-        seller: {
-          select: {
-            name: true,
-            storeName: true,
-          }
-        }
-      },
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
-
-    const total = await prisma.product.count({ where })
-
-    return NextResponse.json({
-      products,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit)
-      }
-    })
+    return NextResponse.json({ products: data })
 
   } catch (error) {
     console.error('Get products error:', error)
