@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { logout, useSellerAuth } from "@/lib/seller-auth";
+import { useSellerAuth } from "@/lib/seller-auth";
 import { useConfirmationModal } from "@/components/ui/confirmation-modal";
 import { useSellerProducts } from "@/hooks/use-seller-products";
-import { Product } from "@/lib/types/database";
 import {
   Store,
   Package,
@@ -34,39 +34,44 @@ export function SellerDashboard() {
   const handleLogout = () => {
     openModal({
       title: "Confirm Logout",
-      description: "Are you sure you want to logout? You will need to sign in again to access your dashboard.",
+      description:
+        "Are you sure you want to logout? You will need to sign in again to access your dashboard.",
       confirmText: "Logout",
       cancelText: "Stay Signed In",
       variant: "destructive",
       icon: <LogOut className="h-6 w-6" />,
-      onConfirm: logout
+      onConfirm: logout,
     });
   };
 
   // Calculate stats from real products data
   const totalProducts = products.length;
-  const activeListings = products.filter(product => product.is_active && product.stock_quantity > 0).length;
+  const activeListings = products.filter(
+    (product) => product.is_active && product.stock_quantity > 0
+  ).length;
   // Note: sales data would need to be added to database schema
   const totalSales = 0; // placeholder until sales tracking is added
   const revenue = 0; // placeholder until sales tracking is added
 
   // Get unique categories from products
-  const uniqueCategories = [...new Set(products.map(product => product.category))];
-  
+  const uniqueCategories = [
+    ...new Set(products.map((product) => product.category)),
+  ];
+
   const categories = [
     { id: "all", name: "All Products", count: totalProducts },
-    ...uniqueCategories.map(category => ({
+    ...uniqueCategories.map((category) => ({
       id: category,
       name: category.charAt(0).toUpperCase() + category.slice(1),
-      count: products.filter(product => product.category === category).length,
-    }))
+      count: products.filter((product) => product.category === category).length,
+    })),
   ];
 
   const getAllProducts = () => {
     if (selectedCategory === "all") {
       return products;
     }
-    return products.filter(product => product.category === selectedCategory);
+    return products.filter((product) => product.category === selectedCategory);
   };
 
   const filteredProducts = getAllProducts().filter((product) =>
@@ -288,9 +293,13 @@ export function SellerDashboard() {
                       <td className="py-4 px-4">
                         <div className="flex items-center space-x-3">
                           <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
-                            <img
-                              src={product.image_url || "/placeholder-image.svg"}
+                            <Image
+                              src={
+                                product.image_url || "/placeholder-image.svg"
+                              }
                               alt={product.name}
+                              width={48}
+                              height={48}
                               className="w-full h-full object-cover"
                             />
                           </div>
@@ -323,9 +332,7 @@ export function SellerDashboard() {
                         </span>
                       </td>
                       <td className="py-4 px-4">
-                        <span className="font-medium text-gray-900">
-                          0
-                        </span>
+                        <span className="font-medium text-gray-900">0</span>
                       </td>
                       <td className="py-4 px-4">
                         <span
@@ -337,7 +344,7 @@ export function SellerDashboard() {
                         >
                           {product.is_active && product.stock_quantity > 0
                             ? "Active"
-                            : product.stock_quantity === 0 
+                            : product.stock_quantity === 0
                             ? "Out of Stock"
                             : "Inactive"}
                         </span>

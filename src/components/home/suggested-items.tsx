@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 "use client";
 
 import { ProductCard } from "@/components/products/product-card";
@@ -37,11 +38,11 @@ function normalizeProduct(product: Product): NormalizedProduct {
 
 // API function to fetch suggested products
 async function fetchSuggestedProducts(): Promise<Product[]> {
-  const response = await fetch('/api/products?active=true');
+  const response = await fetch("/api/products?is_active=true");
   if (!response.ok) {
     throw new Error(`Failed to fetch products: ${response.statusText}`);
   }
-  
+
   const result: ApiResponse<Product[]> = await response.json();
   return result.data || [];
 }
@@ -55,13 +56,13 @@ export function SuggestedItems() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const productsData = await fetchSuggestedProducts();
-      
+
       // Shuffle products and take first 6 for variety
       const shuffled = productsData.sort(() => 0.5 - Math.random());
       const suggested = shuffled.slice(0, 6);
-      
+
       // Normalize products data
       const normalizedProducts = suggested.map(normalizeProduct);
       setProducts(normalizedProducts);
@@ -96,7 +97,7 @@ export function SuggestedItems() {
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
@@ -124,12 +125,10 @@ export function SuggestedItems() {
               </div>
             </div>
           </div>
-          
+
           <div className="text-center py-12">
             <p className="text-red-600 mb-4">{error}</p>
-            <Button onClick={loadProducts}>
-              Try Again
-            </Button>
+            <Button onClick={loadProducts}>Try Again</Button>
           </div>
         </div>
       </section>
@@ -155,9 +154,11 @@ export function SuggestedItems() {
               </div>
             </div>
           </div>
-          
+
           <div className="text-center py-12">
-            <p className="text-gray-600">No products available at the moment.</p>
+            <p className="text-gray-600">
+              No products available at the moment.
+            </p>
           </div>
         </div>
       </section>
@@ -182,8 +183,12 @@ export function SuggestedItems() {
               </p>
             </div>
           </div>
-          
-          <Button variant="outline" className="flex items-center gap-2" onClick={loadProducts}>
+
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={loadProducts}
+          >
             <RefreshCw className="h-4 w-4" />
             Refresh Suggestions
           </Button>

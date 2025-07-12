@@ -1,16 +1,111 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/client";
-import { CreateProductData, TableNames } from "@/lib/types/database";
 
-// GET /api/products - Get all products
+interface CreateProductRequest {
+  name: string;
+  description?: string;
+  price: number;
+  category: string;
+  image_url?: string;
+  stock_quantity: number;
+  is_active?: boolean;
+  seller_id: number;
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body: CreateProductRequest = await request.json();
+
+    // Validate required fields
+    if (!body.name || !body.price || !body.category || !body.seller_id) {
+      return NextResponse.json(
+        { error: "Missing required fields: name, price, category, seller_id" },
+        { status: 400 }
+      );
+    }
+
+    // Validate price
+    if (body.price < 0) {
+      return NextResponse.json(
+        { error: "Price must be greater than or equal to 0" },
+        { status: 400 }
+      );
+    }
+
+    // Validate stock quantity
+    if (body.stock_quantity < 0) {
+      return NextResponse.json(
+        { error: "Stock quantity must be greater than or equal to 0" },
+        { status: 400 }
+      );
+    }
+
+    // Check if seller exists
+    const { data: seller, error: sellerError } = await supabase
+      .from("sellers")
+      .select("id")
+      .eq("id", body.seller_id)
+      .single();
+
+    if (sellerError || !seller) {
+      return NextResponse.json({ error: "Invalid seller_id" }, { status: 400 });
+    }
+
+    // Check if category exists
+    const { data: category, error: categoryError } = await supabase
+      .from("categories")
+      .select("name")
+      .eq("name", body.category)
+      .single();
+
+    if (categoryError || !category) {
+      return NextResponse.json({ error: "Invalid category" }, { status: 400 });
+    }
+
+    // Insert the product
+    const { data: product, error } = await supabase
+      .from("products")
+      .insert({
+        name: body.name,
+        description: body.description || null,
+        price: body.price,
+        category: body.category,
+        image_url: body.image_url || null,
+        stock_quantity: body.stock_quantity,
+        is_active: body.is_active !== undefined ? body.is_active : true,
+        seller_id: body.seller_id,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json(
+        { error: "Failed to create product", details: error.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      data: product,
+      message: "Product created successfully",
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const category = searchParams.get("category")
-      ? decodeURIComponent(searchParams?.get("category") || "")
-      : null;
-    const isActive = searchParams.get("active");
-    const sellerId = searchParams.get("seller_id");
+    const seller_id = searchParams.get("seller_id");
+    const category = searchParams.get("category");
+    const is_active = searchParams.get("is_active");
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "10");
 
@@ -32,61 +127,71 @@ export async function GET(request: NextRequest) {
     // Calculate offset
     const offset = (page - 1) * limit;
 
-    let query = supabase.from(TableNames.PRODUCTS).select("*");
+    let query = supabase.from("products").select(`
+        *,
+        sellers (
+          id,
+          name,
+          store_name
+        ),
+        categories (
+          id,
+          name
+        )
+      `);
 
-    // Apply filters if provided
+    // Apply filters
+    if (seller_id) {
+      // For now, we'll use seller_id = 1 for all requests since we don't have UUID mapping
+      // TODO: Implement proper seller authentication with UUID to integer mapping
+      query = query.eq("seller_id", 1);
+    }
+
     if (category) {
-      query = query.in("category", [category]);
+      query = query.eq("category", category);
     }
 
-    if (isActive !== null) {
-      query = query.eq("is_active", isActive === "true");
+    if (is_active !== null) {
+      query = query.eq("is_active", is_active === "true");
     }
 
-    if (sellerId) {
-      query = query.eq("seller_id", sellerId);
-    }
-
-    // Order by created_at descending
-    query = query.order("created_at", { ascending: false });
-
-    // Apply pagination
-    query = query.range(offset, offset + limit - 1);
-
-    const { data: products, error } = await query;
-
-    if (error) {
-      console.error("Error fetching products:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch products" },
-        { status: 500 }
-      );
-    }
-
-    // Get total count for pagination metadata
+    // Get total count for pagination
     let countQuery = supabase
-      .from(TableNames.PRODUCTS)
+      .from("products")
       .select("*", { count: "exact", head: true });
 
     // Apply same filters to count query
+    if (seller_id) {
+      countQuery = countQuery.eq("seller_id", 1);
+    }
     if (category) {
       countQuery = countQuery.eq("category", category);
     }
-
-    if (isActive !== null) {
-      countQuery = countQuery.eq("is_active", isActive === "true");
-    }
-
-    if (sellerId) {
-      countQuery = countQuery.eq("seller_id", sellerId);
+    if (is_active !== null) {
+      countQuery = countQuery.eq("is_active", is_active === "true");
     }
 
     const { count: totalCount, error: countError } = await countQuery;
 
     if (countError) {
-      console.error("Error fetching products count:", countError);
       return NextResponse.json(
-        { error: "Failed to fetch products count" },
+        {
+          error: "Failed to fetch products count",
+          details: countError.message,
+        },
+        { status: 500 }
+      );
+    }
+
+    // Apply pagination and ordering
+    query = query.order("created_at", { ascending: false });
+    query = query.range(offset, offset + limit - 1);
+
+    const { data: products, error } = await query;
+
+    if (error) {
+      return NextResponse.json(
+        { error: "Failed to fetch products", details: error.message },
         { status: 500 }
       );
     }
@@ -94,7 +199,7 @@ export async function GET(request: NextRequest) {
     const totalPages = Math.ceil((totalCount || 0) / limit);
 
     return NextResponse.json({
-      data: products,
+      data: products || [],
       pagination: {
         page,
         limit,
@@ -106,91 +211,11 @@ export async function GET(request: NextRequest) {
       message: "Products fetched successfully",
     });
   } catch (error) {
-    console.error("Unexpected error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
-
-// POST /api/products - Create a new product
-export async function POST(request: NextRequest) {
-  try {
-    const body: CreateProductData = await request.json();
-
-    // Validate required fields
-    if (!body.name || !body.price || !body.category || !body.seller_id) {
-      return NextResponse.json(
-        { error: "Missing required fields: name, price, category, seller_id" },
-        { status: 400 }
-      );
-    }
-
-    // Validate price is positive
-    if (body.price <= 0) {
-      return NextResponse.json(
-        { error: "Price must be greater than 0" },
-        { status: 400 }
-      );
-    }
-
-    // Validate stock quantity is non-negative
-    if (body.stock_quantity && body.stock_quantity < 0) {
-      return NextResponse.json(
-        { error: "Stock quantity cannot be negative" },
-        { status: 400 }
-      );
-    }
-
-    // Validate seller_id exists
-    const { data: seller, error: sellerError } = await supabase
-      .from(TableNames.SELLERS)
-      .select("id")
-      .eq("id", body.seller_id)
-      .single();
-
-    if (sellerError || !seller) {
-      return NextResponse.json(
-        { error: "Invalid seller_id: seller does not exist" },
-        { status: 400 }
-      );
-    }
-
-    const { data: product, error } = await supabase
-      .from(TableNames.PRODUCTS)
-      .insert({
-        name: body.name,
-        description: body.description,
-        price: body.price,
-        category: body.category,
-        image_url: body.image_url,
-        stock_quantity: body.stock_quantity || 0,
-        is_active: body.is_active ?? true,
-        seller_id: body.seller_id,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error creating product:", error);
-      return NextResponse.json(
-        { error: "Failed to create product" },
-        { status: 500 }
-      );
-    }
-
     return NextResponse.json(
       {
-        data: product,
-        message: "Product created successfully",
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
       { status: 500 }
     );
   }
