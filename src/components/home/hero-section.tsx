@@ -3,27 +3,32 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Sparkles, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { parseNaturalLanguageQuery } from "@/lib/nlp-search";
 
 const PREDEFINED_QUERIES = [
-  "Show me trending fashion items",
-  "Best electronics under $500",
-  "Eco-friendly home products",
-  "Latest smartphone releases",
-  "Comfortable running shoes",
-  "Home office setup essentials",
-  "Black t-shirt under $40",
-  "Red Nike sneakers",
-  "Cotton dress under $100",
-  "Gaming laptop under $1000",
+  "charger under $400",
+  // "Best electronics under $500",
+  // "Eco-friendly home products",
+  // "Latest smartphone releases",
+  // "Comfortable running shoes",
+  // "Home office setup essentials",
+  // "Black t-shirt under $40",
+  // "Red Nike sneakers",
+  // "Cotton dress under $100",
+  // "Gaming laptop under $1000",
 ];
 
 export function HeroSection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) return;
@@ -42,6 +47,7 @@ export function HeroSection() {
         parsedFilters: filters,
       });
     } catch (error) {
+      // Handle search error silently
       console.error("Search error:", error);
     } finally {
       setIsSearching(false);
@@ -53,6 +59,25 @@ export function HeroSection() {
       handleSearch(searchQuery);
     }
   };
+
+  if (!isMounted) {
+    return (
+      <section className="bg-gradient-to-b from-gray-50 to-white py-20 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="mb-8">
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
+              Discover Your Perfect
+              <span className="block text-blue-600">Shopping Experience</span>
+            </h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Let AI help you find exactly what you&apos;re looking for from
+              millions of products
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="bg-gradient-to-b from-gray-50 to-white py-20 px-6">
