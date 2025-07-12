@@ -1,0 +1,9 @@
+<!-- Placeholder SVG for product images -->
+<svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="300" fill="#F3F4F6"/>
+  <rect x="75" y="75" width="150" height="150" fill="#E5E7EB"/>
+  <path d="M150 105L125 135H175L150 105Z" fill="#9CA3AF"/>
+  <circle cx="162.5" cy="117.5" r="7.5" fill="#9CA3AF"/>
+  <path d="M125 160L140 145L155 160L170 145L175 150V190H125V160Z" fill="#9CA3AF"/>
+  <text x="150" y="250" text-anchor="middle" fill="#6B7280" font-family="Arial, sans-serif" font-size="14">Product Image</text>
+</svg>
