@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Store, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { setSellerToStorage } from "@/lib/seller-auth";
 
 export function SellerLogin() {
   const [showPassword, setShowPassword] = useState(false);
@@ -36,8 +37,8 @@ export function SellerLogin() {
         throw new Error(data.error || "Login failed");
       }
 
-      // Store seller info in localStorage (you might want to use a more secure method)
-      localStorage.setItem("seller", JSON.stringify(data.seller));
+      // Store seller info using utility function
+      setSellerToStorage(data.seller);
       
       // Redirect to seller dashboard after successful login
       window.location.href = "/seller/dashboard";

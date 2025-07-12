@@ -21,6 +21,19 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
+  useEffect(() => {
+    // Listen for seller logout event
+    const handleSellerLogout = () => {
+      addToast('info', 'Successfully logged out', 2000);
+    };
+
+    window.addEventListener('seller-logout', handleSellerLogout);
+    
+    return () => {
+      window.removeEventListener('seller-logout', handleSellerLogout);
+    };
+  }, []);
+
   const addToast = (type: ToastType, message: string, duration = 3000) => {
     const id = Math.random().toString(36).substr(2, 9);
     const newToast: Toast = { id, type, message, duration };

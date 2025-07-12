@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, ShoppingCart, Eye, Star } from "lucide-react";
+import { Heart, ShoppingCart, Eye, Star, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuickViewModal } from "@/components/products/quick-view-modal";
@@ -37,14 +37,14 @@ export function ProductCard({
 }: ProductCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const { addToCart } = useCart();
+  const { addToCart, isLoading } = useCart();
   const { addToast } = useToast();
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    addToCart({
+    await addToCart({
       id,
       title,
       price,
@@ -59,9 +59,11 @@ export function ProductCard({
 
   return (
     <Card 
-      className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className={`group relative overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
+        isLoading ? 'opacity-75 pointer-events-none' : ''
+      }`}
+      onMouseEnter={() => !isLoading && setIsHovered(true)}
+      onMouseLeave={() => !isLoading && setIsHovered(false)}
     >
       {/* Badges */}
       <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
@@ -103,7 +105,7 @@ export function ProductCard({
         
         {/* Hover Actions */}
         <div className={`absolute inset-0 bg-black/20 transition-opacity ${
-          isHovered ? 'opacity-100' : 'opacity-0'
+          isHovered && !isLoading ? 'opacity-100' : 'opacity-0'
         }`}>
           <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
             <QuickViewModal 
@@ -131,9 +133,14 @@ export function ProductCard({
               size="sm"
               className="rounded-full px-3 py-2"
               onClick={handleAddToCart}
+              disabled={isLoading}
             >
-              <ShoppingCart className="h-4 w-4 mr-1" />
-              Add to Cart
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+              ) : (
+                <ShoppingCart className="h-4 w-4 mr-1" />
+              )}
+              {isLoading ? "Adding..." : "Add to Cart"}
             </Button>
           </div>
         </div>

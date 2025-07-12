@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { logout, useSellerAuth } from "@/lib/seller-auth";
+import { useConfirmationModal } from "@/components/ui/confirmation-modal";
 import {
   Store,
   Package,
@@ -103,6 +105,20 @@ const DASHBOARD_STATS = {
 export function SellerDashboard() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const { seller, logout } = useSellerAuth();
+  const { openModal, ModalComponent } = useConfirmationModal();
+
+  const handleLogout = () => {
+    openModal({
+      title: "Confirm Logout",
+      description: "Are you sure you want to logout? You will need to sign in again to access your dashboard.",
+      confirmText: "Logout",
+      cancelText: "Stay Signed In",
+      variant: "destructive",
+      icon: <LogOut className="h-6 w-6" />,
+      onConfirm: logout
+    });
+  };
 
   const categories = [
     { id: "all", name: "All Products", count: DASHBOARD_STATS.totalProducts },
@@ -141,9 +157,16 @@ export function SellerDashboard() {
             <div className="flex items-center space-x-4">
               <Link href="/" className="flex items-center space-x-2">
                 <Store className="h-8 w-8 text-blue-600" />
-                <span className="text-xl font-bold text-gray-900">
-                  Seller Dashboard
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-xl font-bold text-gray-900">
+                    {seller?.storeName || "Seller Dashboard"}
+                  </span>
+                  {seller && (
+                    <span className="text-sm text-gray-600">
+                      Welcome back, {seller.name}
+                    </span>
+                  )}
+                </div>
               </Link>
             </div>
 
@@ -156,7 +179,7 @@ export function SellerDashboard() {
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </Button>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
@@ -389,6 +412,9 @@ export function SellerDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Confirmation Modal */}
+      {ModalComponent}
     </div>
   );
 }

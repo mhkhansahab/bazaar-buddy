@@ -17,7 +17,8 @@ import {
   Shield,
   Truck,
   RotateCcw,
-  ChevronRight
+  ChevronRight,
+  Loader2
 } from "lucide-react";
 
 // Mock product data
@@ -92,20 +93,18 @@ export function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const { addToCart } = useCart();
+  const { addToCart, isLoading } = useCart();
   const { addToast } = useToast();
 
-  const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      addToCart({
-        id: PRODUCT_DATA.id,
-        title: PRODUCT_DATA.title,
-        price: PRODUCT_DATA.price,
-        originalPrice: PRODUCT_DATA.originalPrice,
-        image: PRODUCT_DATA.images[0],
-        category: PRODUCT_DATA.category,
-      });
-    }
+  const handleAddToCart = async () => {
+    await addToCart({
+      id: PRODUCT_DATA.id,
+      title: PRODUCT_DATA.title,
+      price: PRODUCT_DATA.price,
+      originalPrice: PRODUCT_DATA.originalPrice,
+      image: PRODUCT_DATA.images[0],
+      category: PRODUCT_DATA.category,
+    }, quantity);
     addToast('success', `${quantity} ${PRODUCT_DATA.title} added to cart!`);
   };
 
@@ -256,9 +255,18 @@ export function ProductDetailPage() {
 
               {/* Action Buttons */}
               <div className="flex space-x-4">
-                <Button size="lg" className="flex-1" onClick={handleAddToCart}>
-                  <ShoppingCart className="h-5 w-5 mr-2" />
-                  Add to Cart
+                <Button 
+                  size="lg" 
+                  className="flex-1" 
+                  onClick={handleAddToCart}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  ) : (
+                    <ShoppingCart className="h-5 w-5 mr-2" />
+                  )}
+                  {isLoading ? "Adding to Cart..." : "Add to Cart"}
                 </Button>
                 <Button
                   variant="outline"

@@ -15,7 +15,8 @@ export interface CartItem {
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (product: Omit<CartItem, 'quantity'>) => void;
+  isLoading: boolean;
+  addToCart: (product: Omit<CartItem, 'quantity'>, quantityToAdd?: number) => Promise<void>;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -27,6 +28,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -45,7 +47,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('cart', JSON.stringify(items));
   }, [items]);
 
-  const addToCart = (product: Omit<CartItem, 'quantity'>) => {
+  const addToCart = async (product: Omit<CartItem, 'quantity'>, quantityToAdd: number = 1) => {
+    setIsLoading(true);
+    
+    // Small delay for better UX (shows loading state)
+    await new Promise(resolve => setTimeout(resolve, 150));
+    
     setItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === product.id);
       
@@ -53,14 +60,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         // If item already exists, increment quantity
         return prevItems.map(item =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + quantityToAdd }
             : item
         );
       } else {
-        // If new item, add with quantity 1
-        return [...prevItems, { ...product, quantity: 1 }];
+        // If new item, add with specified quantity
+        return [...prevItems, { ...product, quantity: quantityToAdd }];
       }
     });
+    
+    setIsLoading(false);
   };
 
   const removeFromCart = (productId: string) => {
@@ -96,6 +105,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const value: CartContextType = {
     items,
+    isLoading,
     addToCart,
     removeFromCart,
     updateQuantity,
