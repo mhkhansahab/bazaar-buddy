@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   Search,
   ShoppingCart,
-  User,
   Menu,
   Globe,
   ChevronDown,
@@ -142,7 +141,7 @@ export function Header() {
 
             {/* Account */}
             <div className="flex items-center space-x-2">
-              <Link href="/seller/login">
+              <Link href="/seller/dashboard">
                 <Button variant="outline" size="sm">
                   Sell
                 </Button>

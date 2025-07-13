@@ -14,7 +14,7 @@ export function SellerLogin() {
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     email: "",
-    password: ""
+    password: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,7 +39,7 @@ export function SellerLogin() {
 
       // Store seller info using utility function
       setSellerToStorage(data.seller);
-      
+
       // Redirect to seller dashboard after successful login
       window.location.href = "/seller/dashboard";
     } catch (err) {
@@ -51,7 +51,7 @@ export function SellerLogin() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -59,7 +59,7 @@ export function SellerLogin() {
       <div className="w-full max-w-md">
         {/* Back to Home */}
         <Link href="/">
-          <Button variant="ghost" className="mb-6">
+          <Button variant="outline" className="mb-6">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
           </Button>
@@ -89,7 +89,10 @@ export function SellerLogin() {
 
               {/* Email Field */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Email Address
                 </label>
                 <Input
@@ -106,7 +109,10 @@ export function SellerLogin() {
 
               {/* Password Field */}
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Password
                 </label>
                 <div className="relative">
@@ -143,7 +149,9 @@ export function SellerLogin() {
                     type="checkbox"
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-sm text-gray-700">Remember me</span>
+                  <span className="ml-2 text-sm text-gray-700">
+                    Remember me
+                  </span>
                 </label>
                 <Link href="/seller/forgot-password">
                   <span className="text-sm text-blue-600 hover:text-blue-700">
@@ -153,9 +161,9 @@ export function SellerLogin() {
               </div>
 
               {/* Login Button */}
-              <Button 
-                type="submit" 
-                className="w-full" 
+              <Button
+                type="submit"
+                className="w-full"
                 size="lg"
                 disabled={isLoading}
               >
@@ -169,7 +177,9 @@ export function SellerLogin() {
                 <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">New to selling?</span>
+                <span className="px-2 bg-white text-gray-500">
+                  New to selling?
+                </span>
               </div>
             </div>
 
@@ -182,7 +192,9 @@ export function SellerLogin() {
 
             {/* Features */}
             <div className="mt-8 pt-6 border-t border-gray-200">
-              <h3 className="text-sm font-medium text-gray-900 mb-3">Why sell with us?</h3>
+              <h3 className="text-sm font-medium text-gray-900 mb-3">
+                Why sell with us?
+              </h3>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li className="flex items-center">
                   <div className="w-1 h-1 bg-blue-500 rounded-full mr-3"></div>
