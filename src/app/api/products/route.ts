@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
       query = query.eq("is_active", is_active === "true");
     }
 
-    // Get total count for pagination
+    // Get total count for pagination - use simpler query for count
     let countQuery = supabase
       .from("products")
       .select("*", { count: "exact", head: true });
@@ -160,14 +160,11 @@ export async function GET(request: NextRequest) {
 
     const { count: totalCount, error: countError } = await countQuery;
 
+    let finalCount = totalCount;
     if (countError) {
-      return NextResponse.json(
-        {
-          error: "Failed to fetch products count",
-          details: countError.message,
-        },
-        { status: 500 }
-      );
+      console.error("Count query error:", countError);
+      // If count fails, continue without it but log the error
+      finalCount = 0;
     }
 
     // Apply pagination and ordering
@@ -183,16 +180,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const totalPages = Math.ceil((totalCount || 0) / limit);
+    const totalPages = Math.ceil((finalCount || 0) / limit);
 
     return NextResponse.json({
       data: products || [],
       pagination: {
         page,
         limit,
-        total: totalCount || 0,
-        totalPages,
-        hasNext: page < totalPages,
+        total: finalCount || 0,
+        totalPages: totalPages || 1,
+        hasNext: finalCount ? page < totalPages : false,
         hasPrev: page > 1,
       },
       message: "Products fetched successfully",
