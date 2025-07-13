@@ -123,10 +123,10 @@ export function Header() {
             </DropdownMenu>
 
             {/* Language Selector */}
-            <Button variant="ghost" size="sm" className="hidden lg:flex">
+            {/* <Button variant="ghost" size="sm" className="hidden lg:flex">
               <Globe className="h-4 w-4 mr-2" />
               EN
-            </Button>
+            </Button> */}
 
             {/* Cart */}
             <Link href="/cart">
@@ -147,12 +147,12 @@ export function Header() {
                   Sell
                 </Button>
               </Link>
-              <Link href="/login">
+              {/* <Link href="/login">
                 <Button variant="ghost" size="sm">
                   <User className="h-5 w-5 mr-2" />
                   Account
                 </Button>
-              </Link>
+              </Link> */}
             </div>
 
             {/* Mobile Menu */}
