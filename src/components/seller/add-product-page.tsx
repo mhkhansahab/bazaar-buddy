@@ -152,11 +152,15 @@ export function AddProductPage() {
       }
 
       // Success - show success message and redirect
-      await Swal.mixin({
+      await Swal.fire({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 1500,
+        timerProgressBar: true,
         title: "Success!",
         text: "Product created successfully!",
         icon: "success",
-        confirmButtonText: "View Dashboard",
       });
 
       // Redirect to dashboard with a refresh parameter
