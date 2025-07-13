@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,19 @@ export function SellerDashboard() {
   const { seller, logout } = useSellerAuth();
   const { openModal, ModalComponent } = useConfirmationModal();
   const { products, isLoading, error, refetch } = useSellerProducts();
+
+  // Check for refresh parameter and refetch if needed
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("refresh") === "true") {
+        console.log("Refreshing products after creation...");
+        refetch();
+        // Clean up the URL
+        window.history.replaceState({}, "", "/seller/dashboard");
+      }
+    }
+  }, [refetch]);
 
   const handleLogout = () => {
     openModal({

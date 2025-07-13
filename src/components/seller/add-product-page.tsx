@@ -17,11 +17,14 @@ import {
   FileImage,
   Loader2,
 } from "lucide-react";
+import Swal from "sweetalert2";
+import { getSellerFromStorage } from "@/lib/seller-auth";
 
 export function AddProductPage() {
   const [activeTab, setActiveTab] = useState<"manual" | "ai">("ai");
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isAIProcessing, setIsAIProcessing] = useState(false);
+  const seller = getSellerFromStorage();
   const [aiSuggestions, setAiSuggestions] = useState<{
     title: string;
     description: string;
@@ -85,7 +88,8 @@ export function AddProductPage() {
     setUploadedImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const applyAISuggestions = () => {
+  const applyAISuggestions = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent form submission
     if (aiSuggestions) {
       setFormData({
         ...formData,
@@ -93,6 +97,14 @@ export function AddProductPage() {
         description: aiSuggestions.description,
         category: aiSuggestions.category,
         price: aiSuggestions.suggestedPrice.toString(),
+      });
+
+      // Show success message
+      Swal.fire({
+        title: "AI Suggestions Applied!",
+        text: "The AI suggestions have been applied to your form.",
+        icon: "success",
+        confirmButtonText: "Great!",
       });
     }
   };
@@ -117,8 +129,10 @@ export function AddProductPage() {
         image_url: mainImageUrl,
         stock_quantity: parseInt(formData.stock),
         is_active: true,
-        seller_id: 1, // TODO: Get from authenticated user
+        seller_id: seller?.id ?? "1",
       };
+
+      console.log("Submitting product data:", productData);
 
       const response = await fetch("/api/products", {
         method: "POST",
@@ -129,14 +143,22 @@ export function AddProductPage() {
       });
 
       const result = await response.json();
+      console.log("API response:", result);
 
       if (!response.ok) {
         throw new Error(result.error || "Failed to create product");
       }
 
-      // Success - redirect to dashboard or show success message
-      alert("Product created successfully!");
-      // TODO: Redirect to dashboard or product list
+      // Success - show success message and redirect
+      await Swal.fire({
+        title: "Success!",
+        text: "Product created successfully!",
+        icon: "success",
+        confirmButtonText: "View Dashboard",
+      });
+
+      // Redirect to dashboard with a refresh parameter
+      window.location.href = "/seller/dashboard?refresh=true";
     } catch (error) {
       setSubmitError(
         error instanceof Error ? error.message : "Failed to create product"
@@ -360,7 +382,11 @@ export function AddProductPage() {
                       </div>
                     </div>
 
-                    <Button onClick={applyAISuggestions} className="w-full">
+                    <Button
+                      type="button"
+                      onClick={applyAISuggestions}
+                      className="w-full"
+                    >
                       Apply AI Suggestions
                     </Button>
                   </div>

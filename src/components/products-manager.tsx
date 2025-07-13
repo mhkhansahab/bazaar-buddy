@@ -17,6 +17,7 @@ import {
   CreateProductData,
   ApiResponse,
 } from "@/lib/types/database";
+import { getSellerFromStorage } from "@/lib/seller-auth";
 
 interface ProductsManagerProps {
   className?: string;
@@ -29,6 +30,7 @@ export function ProductsManager({ className }: ProductsManagerProps) {
   const [error, setError] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const seller = getSellerFromStorage();
   const [formData, setFormData] = useState<CreateProductData>({
     name: "",
     description: "",
@@ -37,9 +39,8 @@ export function ProductsManager({ className }: ProductsManagerProps) {
     image_url: "",
     stock_quantity: 0,
     is_active: true,
-    seller_id: 1, // Default seller ID - you might want to make this dynamic
+    seller_id: seller?.id ? +seller.id : 1, // Default seller ID - you might want to make this dynamic
   });
-
   // Load products and categories on component mount
   useEffect(() => {
     loadProducts();
