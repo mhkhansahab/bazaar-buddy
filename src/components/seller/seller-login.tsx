@@ -55,7 +55,7 @@ export function SellerLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-b from-indigo-100 to-white flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         {/* Back to Home */}
         <Link href="/">
