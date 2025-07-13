@@ -19,8 +19,10 @@ import {
 } from "lucide-react";
 import Swal from "sweetalert2";
 import { getSellerFromStorage } from "@/lib/seller-auth";
+import { useRouter } from "next/navigation";
 
 export function AddProductPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"manual" | "ai">("ai");
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isAIProcessing, setIsAIProcessing] = useState(false);
@@ -150,7 +152,7 @@ export function AddProductPage() {
       }
 
       // Success - show success message and redirect
-      await Swal.fire({
+      await Swal.mixin({
         title: "Success!",
         text: "Product created successfully!",
         icon: "success",
@@ -158,7 +160,7 @@ export function AddProductPage() {
       });
 
       // Redirect to dashboard with a refresh parameter
-      window.location.href = "/seller/dashboard?refresh=true";
+      router.push("/seller/dashboard?refresh=true");
     } catch (error) {
       setSubmitError(
         error instanceof Error ? error.message : "Failed to create product"
