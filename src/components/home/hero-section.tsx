@@ -50,7 +50,7 @@ export function HeroSection() {
               placeholder="Ask me anything about products you want to find..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-32 pr-20 py-4 text-lg rounded-2xl border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 shadow-lg"
+              className="w-full pl-32 pr-20 py-5 text-lg rounded-2xl border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 shadow-lg"
               onKeyPress={(e) => {
                 if (e.key === "Enter" && searchQuery.trim()) {
                   handleSearch(searchQuery);
@@ -59,7 +59,7 @@ export function HeroSection() {
             />
             <Button
               onClick={() => searchQuery.trim() && handleSearch(searchQuery)}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-xl px-6 py-2"
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 rounded-xl px-6 py-2"
               disabled={!searchQuery.trim()}
             >
               <Search className="h-4 w-4 mr-2" />
