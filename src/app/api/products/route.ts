@@ -127,24 +127,11 @@ export async function GET(request: NextRequest) {
     // Calculate offset
     const offset = (page - 1) * limit;
 
-    let query = supabase.from("products").select(`
-        *,
-        sellers (
-          id,
-          name,
-          store_name
-        ),
-        categories (
-          id,
-          name
-        )
-      `);
+    let query = supabase.from("products").select("*");
 
     // Apply filters
     if (seller_id) {
-      // For now, we'll use seller_id = 1 for all requests since we don't have UUID mapping
-      // TODO: Implement proper seller authentication with UUID to integer mapping
-      query = query.eq("seller_id", 1);
+      query = query.eq("seller_id", parseInt(seller_id));
     }
 
     if (category) {
@@ -162,7 +149,7 @@ export async function GET(request: NextRequest) {
 
     // Apply same filters to count query
     if (seller_id) {
-      countQuery = countQuery.eq("seller_id", 1);
+      countQuery = countQuery.eq("seller_id", parseInt(seller_id));
     }
     if (category) {
       countQuery = countQuery.eq("category", category);
