@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { getSellerFromStorage, SellerInfo } from '@/lib/seller-auth';
+import { useEffect, useState } from "react";
+import { getSellerFromStorage, SellerInfo } from "@/lib/seller-auth";
+import { useRouter } from "next/navigation";
 
 interface ProtectedSellerRouteProps {
   children: React.ReactNode;
@@ -10,19 +11,19 @@ interface ProtectedSellerRouteProps {
 export function ProtectedSellerRoute({ children }: ProtectedSellerRouteProps) {
   const [seller, setSeller] = useState<SellerInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  const router = useRouter();
   useEffect(() => {
     const sellerInfo = getSellerFromStorage();
-    
+
     if (!sellerInfo) {
       // Redirect to login if no seller info found
-      window.location.href = '/seller/login';
+      router.push("/seller/login");
       return;
     }
-    
+
     setSeller(sellerInfo);
     setIsLoading(false);
-  }, []);
+  }, [router]);
 
   if (isLoading) {
     return (
